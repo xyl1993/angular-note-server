@@ -61,7 +61,6 @@ module.exports = {
               nikeName: rows[0].nike_name,
               userId: rows[0].id
             }
-            console.log(payload);
             // 签发 Token
             const token = jwt.sign(payload, secret, { expiresIn: '1day' })
             // 输出签发的 Token

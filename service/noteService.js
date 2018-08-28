@@ -6,7 +6,8 @@ const log = require('log4js').getLogger("noteService");
 const pool = mysql.createPool($conf.mysql);
 const constants = require('../config/constants');
 const verifyToken = require('../utils/verifyToken');
-
+const hashidsUtil = require('../utils/hashidsUtili');
+const hashKeyObject = require('../config/hashKey');
 module.exports = {
   addNote: function (req, res, next) {
     let resultMap = {};
@@ -31,16 +32,19 @@ module.exports = {
             resultMap[constants.MESSAGE] = constants.SYSTEM_ERROR;
             log.error(err);
           } else {
-            // 输出签发的 Token
+            let insertId = rows.insertId;//获取自动生成的id
+            console.log(`id为${insertId}`);
+            resultMap[constants.DATA] = hashidsUtil.encode(insertId,hashKeyObject.noteHashKey);
             resultMap[constants.CODE] = constants.SUCCESS_CODE;
           }
+          res.json(resultMap);
           connection.release();
         });
       });
     } else {
       resultMap[constants.CODE] = constants.FAIL_CODE;
       resultMap[constants.MESSAGE] = constants.LOGIN_TIME_OUT;
+      res.json(resultMap);
     }
-    res.json(resultMap);
   }
 };
