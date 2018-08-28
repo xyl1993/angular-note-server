@@ -34,7 +34,39 @@ module.exports = {
           } else {
             let insertId = rows.insertId;//获取自动生成的id
             console.log(`id为${insertId}`);
-            resultMap[constants.DATA] = hashidsUtil.encode(insertId,hashKeyObject.noteHashKey);
+            resultMap[constants.DATA] = hashidsUtil.encode(insertId, hashKeyObject.noteHashKey);
+            resultMap[constants.CODE] = constants.SUCCESS_CODE;
+          }
+          res.json(resultMap);
+          connection.release();
+        });
+      });
+    } else {
+      resultMap[constants.CODE] = constants.FAIL_CODE;
+      resultMap[constants.MESSAGE] = constants.LOGIN_TIME_OUT;
+      res.json(resultMap);
+    }
+  },
+  selNoteList: function (req, res, next) {
+    let resultMap = {};
+    let token = req.headers.token;
+    let user = verifyToken.verify(token);
+    if (user != null) {
+      pool.getConnection(function (err, connection) {
+        // 建立连接，向表中插入值
+        let params = [
+          req.body.keyword
+        ]
+        let _sql = `select * from note where create_id = ${user.userId}`;
+        _sql = req.body.keyword?_sql+` and titke like concat('%',${req.body.keyword},'%')`:_sql;
+        log.info(_sql);
+        connection.query(_sql, function (err, rows, result) {
+          if (err) {
+            resultMap[constants.CODE] = constants.FAIL_CODE;
+            resultMap[constants.MESSAGE] = constants.SYSTEM_ERROR;
+            log.error(err);
+          } else {
+            resultMap[constants.DATA] = rows;
             resultMap[constants.CODE] = constants.SUCCESS_CODE;
           }
           res.json(resultMap);
