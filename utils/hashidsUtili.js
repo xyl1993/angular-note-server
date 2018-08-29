@@ -13,7 +13,7 @@ module.exports = {
    */
   decode:function(id,key){
     let hashids = new Hashids(key,8);
-		let numbers = hashids.decode(id);
-		return numbers.length>0?String.valueOf(numbers[0]):null;
+    let numbers = hashids.decode(id);
+		return numbers.length>0?numbers[0]:null;
   }
 }

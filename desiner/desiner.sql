@@ -66,5 +66,6 @@ CREATE TABLE `note` (
   `file` text DEFAULT NULL, /*附件*/
   `create_id` bigint(20) NOT NULL,
   `create_time` datetime DEFAULT NULL,
+  `modify_time` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
