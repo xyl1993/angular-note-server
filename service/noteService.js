@@ -23,12 +23,14 @@ module.exports = {
           content: req.body.content,
           file: req.body.file,
           userId: user.userId,
-          create_time: new Date()
+          create_time: new Date(),
+          preview_content
         }
         let params = [];
         Object.keys(requestBody).forEach(function (key) {
           params.push(requestBody[key]);
         });
+       
         log.info($sql.addNote);
         connection.query($sql.addNote, params, function (err, rows, result) {
           if (err) {
@@ -61,13 +63,17 @@ module.exports = {
       pool.getConnection(function (err, connection) {
         let params = [
           requestBody.title,
-          requestBody.tag,
+          requestBody.tag?requestBody.tag.join():undefined,
           requestBody.content,
+          requestBody.preview_content,
           requestBody.file,
           new Date(),
           hashidsUtil.decode(requestBody._id, hashKeyObject.noteHashKey)
         ];
-        connection.query($sql.editNote, params, function (err, rows, result) {
+        let _sql = 'update note set title= ?,tag=?,content=?,preview_content=?,file=?,modify_time=? where id = ?';
+        _sql = mysql.format(_sql, params);
+        log.info(_sql);
+        connection.query(_sql, function (err, rows, result) {
           if (err) {
             resultMap[constants.CODE] = constants.FAIL_CODE;
             resultMap[constants.MESSAGE] = constants.SYSTEM_ERROR;
@@ -92,8 +98,13 @@ module.exports = {
     if (user != null) {
       pool.getConnection(function (err, connection) {
         // 建立连接，向表中插入值
-        let _sql = `select id,title,left(content,30) as content,create_time from note where create_id = ${user.userId}`;
-        _sql = req.body.keyword ? _sql + ` and titke like concat('%',${req.body.keyword},'%')` : _sql;
+        let _sql = `select id,title,left(preview_content,30) as preview_content,create_time from note where create_id = ?`;
+        _sql = req.body.keyword ? _sql + ` and (content like '%${req.body.keyword}%' or title like '%${req.body.keyword}%')` : _sql;
+        let params = [user.userId];
+        if(req.body.keyword){
+          params.push(req.body.keyword);
+        }
+        _sql=mysql.format(_sql,params);
         log.info(_sql);
         connection.query(_sql, function (err, rows, result) {
           if (err) {
@@ -124,8 +135,15 @@ module.exports = {
     let user = verifyToken.verify(token);
     if (user != null) {
       pool.getConnection(function (err, connection) {
-        // 建立连接，向表中插入值
-        let _sql = `select * from note where id = ${hashidsUtil.decode(req.body._id, hashKeyObject.noteHashKey)}`;
+        let _sql = `select 
+          id,
+          title,
+          tag,
+          ifnull(content,'') as content,
+          file,
+          create_time,
+          modify_time
+        from note where id = ${hashidsUtil.decode(req.body._id, hashKeyObject.noteHashKey)}`;
         log.info(_sql);
         connection.query(_sql, function (err, rows, result) {
           if (err) {
@@ -134,6 +152,7 @@ module.exports = {
             log.error(err);
           } else {
             rows[0]._id = hashidsUtil.encode(rows[0].id, hashKeyObject.noteHashKey);
+            rows[0].tag = rows[0].tag?rows[0].tag.split(','):[];
             delete rows[0].id;
             resultMap[constants.DATA] = rows[0];
             resultMap[constants.CODE] = constants.SUCCESS_CODE;

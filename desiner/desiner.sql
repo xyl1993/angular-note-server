@@ -29,6 +29,7 @@ CREATE TABLE `users` (
   `password` varchar(32) DEFAULT NULL,
   `create_time` datetime DEFAULT NULL,
   `login_time` datetime DEFAULT NULL,
+  `portrait` varchar(1000) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -63,6 +64,7 @@ CREATE TABLE `note` (
   `title` varchar(500) DEFAULT NULL,
   `tag` varchar(500) DEFAULT NULL,
   `content` text DEFAULT NULL,
+  `preview_content` VARCHAR(500) DEFAULT NULL,/*用于列表展示的纯文本*/
   `file` text DEFAULT NULL, /*附件*/
   `create_id` bigint(20) NOT NULL,
   `create_time` datetime DEFAULT NULL,
