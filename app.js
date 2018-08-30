@@ -26,15 +26,19 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
-app.use('/static', express.static(path.join(__dirname, 'static')));
+app.use('/',express.static(path.join(__dirname, 'static')));
 
-app.use('/', indexRouter);
-app.use('/login', loginRouter);
-app.use('/note', noteController);
-app.use('/HFSystem', middleRouter);
-app.use(function (req, res, next) {
-  console.log(req);
-  next(createError(404));
+// app.use('/', indexRouter);
+app.use('/api/login', loginRouter);
+app.use('/api/note', noteController);
+app.use('/api/HFSystem', middleRouter);
+// app.use(function (req, res, next) {
+//   console.log(req);
+//   next(createError(404));
+// });
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'static/index.html'));
 });
 
 // if (app.get('env') === 'development') {
