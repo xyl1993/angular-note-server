@@ -24,7 +24,7 @@ module.exports = {
           file: req.body.file,
           userId: user.userId,
           create_time: new Date(),
-          preview_content
+          preview_content:req.body.preview_content
         }
         let params = [];
         Object.keys(requestBody).forEach(function (key) {
@@ -98,7 +98,7 @@ module.exports = {
     if (user != null) {
       pool.getConnection(function (err, connection) {
         // 建立连接，向表中插入值
-        let _sql = `select id,title,left(preview_content,30) as preview_content,create_time from note where create_id = ?`;
+        let _sql = `select id,title,preview_content,create_time from note where create_id = ?`;
         _sql = req.body.keyword ? _sql + ` and (content like '%${req.body.keyword}%' or title like '%${req.body.keyword}%')` : _sql;
         let params = [user.userId];
         if(req.body.keyword){
