@@ -26,7 +26,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
-app.use('/',express.static(path.join(__dirname, 'static')));
+app.use('/',express.static(path.join(__dirname, 'public')));
 
 // app.use('/', indexRouter);
 app.use('/api/login', loginRouter);
@@ -38,7 +38,7 @@ app.use('/api/HFSystem', middleRouter);
 // });
 
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'static/index.html'));
+  res.sendFile(path.join(__dirname, 'public/index.html'));
 });
 
 // if (app.get('env') === 'development') {
