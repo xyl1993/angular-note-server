@@ -5,4 +5,4 @@ dist/
 vue/
 log/
 *.log
-db.js
+/config/db.js
