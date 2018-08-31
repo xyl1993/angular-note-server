@@ -100,6 +100,7 @@ module.exports = {
         // 建立连接，向表中插入值
         let _sql = `select id,title,preview_content,create_time from note where create_id = ?`;
         _sql = req.body.keyword ? _sql + ` and (content like '%${req.body.keyword}%' or title like '%${req.body.keyword}%')` : _sql;
+        _sql = _sql+' order by create_time desc';
         let params = [user.userId];
         if(req.body.keyword){
           params.push(req.body.keyword);
