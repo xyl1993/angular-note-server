@@ -20,7 +20,7 @@ module.exports = {
         let requestBody = {
           title: req.body.title,
           tag: req.body.tag ? req.body.tag.toString() : undefined,
-          content: req.body.content,
+          content: req.body.content?req.body.content:'',
           file: req.body.file,
           userId: user.userId,
           create_time: new Date(),
