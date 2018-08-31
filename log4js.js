@@ -37,7 +37,7 @@ log4js.configure({
   categories: {
     default: { appenders: ['data_file'], level: 'info' },//默认log类型，输出到控制台 log文件 log日期文件 且登记大于info即可
     // production:{appenders:['data_file'], level:'warn'},  //生产环境 log类型 只输出到按日期命名的文件，且只输出警告以上的log
-    // console:{appenders:['console'], level:'debug'}, //开发环境  输出到控制台
+    console:{appenders:['console'], level:'debug'}, //开发环境  输出到控制台
     // debug:{appenders:['console', 'log_file'], level:'debug'}, //调试环境 输出到log文件和控制台    
     error_log: { appenders: ['error_file'], level: 'error' }//error 等级log 单独输出到error文件中 任何环境的errorlog 将都以日期文件单独记录
   },
