@@ -5,6 +5,7 @@ var log = require('log4js').getLogger("loginService");
 // 使用连接池，提升性能
 var pool = mysql.createPool($conf.mysql);
 const constants = require('../config/constants');
+const config = require('../config/config');
 const jwt = require('jsonwebtoken');
 const secret = 'SUMMERNOTE';
 
@@ -35,7 +36,7 @@ module.exports = {
               req.body.password,
               _date,
               _date,
-              constants.DEFAULTIMG
+              config.defaultImg
             ];
             connection.query($sql.insertUsers, params, function (err, rows, result) {
               if (err) {
@@ -55,7 +56,7 @@ module.exports = {
                 resultMap[constants.TOKEN] = token
                 resultMap[constants.DATA] = {
                   nike_name:req.body.email,
-                  portrait:constants.DEFAULTIMG
+                  portrait:config.QNdomain+config.defaultImg
                 }
               }
               res.json(resultMap);
@@ -92,7 +93,7 @@ module.exports = {
             resultMap[constants.TOKEN] = token;
             resultMap[constants.DATA] = {
               nike_name:rows[0].nike_name,
-              portrait:rows[0].portrait
+              portrait:config.QNdomain+rows[0].portrait
             }
           }else{
             resultMap[constants.CODE] = constants.FAIL_CODE;

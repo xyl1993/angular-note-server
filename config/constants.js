@@ -10,5 +10,5 @@ module.exports = {
   'EMAILUSE':'此邮箱已被注册',
   'LOGIN_TIME_OUT':'登录过期',
   'TOKEN':'token',
-  'DEFAULTIMG':'http://pe9jgrxru.bkt.clouddn.com/topimg.jpg'
+  'URL':'url',//ueditor 上传成功返回的数据字段必须为url
 }

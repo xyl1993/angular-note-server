@@ -7,7 +7,6 @@ var ejs = require('ejs');  //我是新引入的ejs插件
 const log4js = require('log4js');
 var logger = require('./log4js');
 
-
 var indexRouter = require('./routes/indexController');
 var loginRouter = require('./routes/loginController');
 var noteController = require('./routes/noteController');
@@ -18,10 +17,9 @@ var app = express();
 app.engine('html', ejs.__express);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'html');
-
 app.use(log4js.connectLogger(logger, { level: 'auto', format: ':method :url  :status  :response-time ms' }));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
