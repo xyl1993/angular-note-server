@@ -10,5 +10,6 @@ module.exports = {
   'EMAILUSE':'此邮箱已被注册',
   'LOGIN_TIME_OUT':'登录过期',
   'TOKEN':'token',
+  'NOARTICLE':'文章不存在',
   'URL':'url',//ueditor 上传成功返回的数据字段必须为url
 }

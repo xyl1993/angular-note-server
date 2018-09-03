@@ -79,7 +79,7 @@ module.exports = {
         if (err) {
           resultMap[constants.CODE] = constants.FAIL_CODE;
           resultMap[constants.MESSAGE] = constants.SYSTEM_ERROR;
-          log.error(resultMap);
+          log.error(err);
         } else {
           if (rows.length > 0) {
             const payload = {

@@ -98,10 +98,10 @@ module.exports = {
     if (user != null) {
       pool.getConnection(function (err, connection) {
         // 建立连接，向表中插入值
-        let _sql = `select id,title,preview_content,create_time from note where create_id = ?`;
+        let _sql = `select id,title,preview_content,create_time from note where create_id = ? and status = ?`;
         _sql = req.body.keyword ? _sql + ` and (content like '%${req.body.keyword}%' or title like '%${req.body.keyword}%')` : _sql;
         _sql = _sql+' order by create_time desc';
-        let params = [user.userId];
+        let params = [user.userId,req.body.status];
         if(req.body.keyword){
           params.push(req.body.keyword);
         }
@@ -131,6 +131,44 @@ module.exports = {
     }
   },
   selNoteDetail: function (req, res, next) {
+    let resultMap = {};
+    let token = req.headers.token;
+    let user = verifyToken.verify(token);
+    if (user != null) {
+      pool.getConnection(function (err, connection) {
+        let _sql = `select 
+          id,
+          title,
+          tag,
+          ifnull(content,'') as content,
+          file,
+          create_time,
+          modify_time
+        from note where id = ${hashidsUtil.decode(req.body._id, hashKeyObject.noteHashKey)}`;
+        log.info(_sql);
+        connection.query(_sql, function (err, rows, result) {
+          if (err) {
+            resultMap[constants.CODE] = constants.FAIL_CODE;
+            resultMap[constants.MESSAGE] = constants.SYSTEM_ERROR;
+            log.error(err);
+          } else {
+            rows[0]._id = hashidsUtil.encode(rows[0].id, hashKeyObject.noteHashKey);
+            rows[0].tag = rows[0].tag?rows[0].tag.split(','):[];
+            delete rows[0].id;
+            resultMap[constants.DATA] = rows[0];
+            resultMap[constants.CODE] = constants.SUCCESS_CODE;
+          }
+          res.json(resultMap);
+          connection.release();
+        });
+      });
+    } else {
+      resultMap[constants.CODE] = constants.FAIL_CODE;
+      resultMap[constants.MESSAGE] = constants.LOGIN_TIME_OUT;
+      res.json(resultMap);
+    }
+  },
+  logicDelete: function (req, res, next) {
     let resultMap = {};
     let token = req.headers.token;
     let user = verifyToken.verify(token);

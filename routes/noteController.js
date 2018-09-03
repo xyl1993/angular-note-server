@@ -23,6 +23,13 @@ router.post('/editNote', function (req, res, next) {
   return service.editNote(req, res, next);
 });
 /**
+ * 逻辑删除
+ */
+router.post('/logicDelete', function (req, res, next) {
+  return service.delete(req, res, next);
+});
+
+/**
  * 接收前台file文件上传到七牛云
  */
 router.post('/upload', function (req, res, next) {
