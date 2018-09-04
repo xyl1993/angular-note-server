@@ -86,7 +86,7 @@ module.exports = {
           log.error(err);
           res.json(resultMap);
         } else {
-          if (rows[0].id) {
+          if (rows[0] && rows[0].id) {
             //授权表存在用户
             let userId = rows[0].user_id;
             if (userId) {
@@ -100,7 +100,7 @@ module.exports = {
               //跳转到第三方授权回调页，并将token数据返回 保存到localstage中
               res.redirect(path);
             } else {
-              let path = `${config.appServerIp}/page/bindEmail?openId=${rows[0].id}`;
+              let path = `${config.appServerIp}/page/bindEmail?openId=${req.openId}`;
               //跳转到绑定邮箱的页面
               res.redirect(path);
             }
