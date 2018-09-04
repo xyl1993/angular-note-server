@@ -7,7 +7,8 @@ var ejs = require('ejs');  //我是新引入的ejs插件
 const log4js = require('log4js');
 var logger = require('./log4js');
 
-var indexRouter = require('./routes/articleRouter');
+var oAuthRouter = require('./routes/oAuthRouter');
+var articleRouter = require('./routes/articleRouter');
 var loginRouter = require('./routes/loginController');
 var noteController = require('./routes/noteController');
 var middleRouter = require('./routes/middle');
@@ -27,11 +28,11 @@ app.use(cookieParser());
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/article', indexRouter);
+app.use('/article', articleRouter);
 app.use('/api/login', loginRouter);
 app.use('/api/note', noteController);
 app.use('/api/HFSystem', middleRouter);
-
+app.use('/oAuth', oAuthRouter);
 // app.get('*', (req, res) => {
 //   res.sendFile(path.join(__dirname, 'public/index.html'));
 // });

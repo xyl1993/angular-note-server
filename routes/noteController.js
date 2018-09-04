@@ -26,7 +26,19 @@ router.post('/editNote', function (req, res, next) {
  * 逻辑删除
  */
 router.post('/logicDelete', function (req, res, next) {
-  return service.delete(req, res, next);
+  return service.logicDelete(req, res, next);
+});
+/**
+ * 物理删除
+ */
+router.post('/physicsDelete', function (req, res, next) {
+  return service.physicsDelete(req, res, next);
+});
+/**
+ * 恢复文章
+ */
+router.post('/recovery', function (req, res, next) {
+  return service.recovery(req, res, next);
 });
 
 /**

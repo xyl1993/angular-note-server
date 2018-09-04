@@ -14,6 +14,8 @@ CREATE TABLE `open_users` (
   `open_id` varchar(50) DEFAULT NULL,  /*第三方openid*/
   `user_id` bigint(20) NOT NULL,   /*主id*/
   `create_time` datetime DEFAULT NULL,
+  `portrait` varchar(1000) DEFAULT NULL,  /*第三方头像*/
+  `nike_name` varchar(200) DEFAULT NULL,   /*第三方昵称*/
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

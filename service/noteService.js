@@ -144,7 +144,9 @@ module.exports = {
           file,
           create_time,
           modify_time
-        from note where id = ${hashidsUtil.decode(req.body._id, hashKeyObject.noteHashKey)}`;
+        from note where id = ?`;
+        let params = [hashidsUtil.decode(req.body._id, hashKeyObject.noteHashKey)];
+        _sql = mysql.format(_sql,params);
         log.info(_sql);
         connection.query(_sql, function (err, rows, result) {
           if (err) {
@@ -168,21 +170,18 @@ module.exports = {
       res.json(resultMap);
     }
   },
+  /**
+   * 逻辑删除
+   */
   logicDelete: function (req, res, next) {
     let resultMap = {};
     let token = req.headers.token;
     let user = verifyToken.verify(token);
     if (user != null) {
       pool.getConnection(function (err, connection) {
-        let _sql = `select 
-          id,
-          title,
-          tag,
-          ifnull(content,'') as content,
-          file,
-          create_time,
-          modify_time
-        from note where id = ${hashidsUtil.decode(req.body._id, hashKeyObject.noteHashKey)}`;
+        let _sql = `update note set status = 0 where id =  ?`;
+        let params = [hashidsUtil.decode(req.body._id, hashKeyObject.noteHashKey)];
+        _sql=mysql.format(_sql,params);
         log.info(_sql);
         connection.query(_sql, function (err, rows, result) {
           if (err) {
@@ -190,10 +189,6 @@ module.exports = {
             resultMap[constants.MESSAGE] = constants.SYSTEM_ERROR;
             log.error(err);
           } else {
-            rows[0]._id = hashidsUtil.encode(rows[0].id, hashKeyObject.noteHashKey);
-            rows[0].tag = rows[0].tag?rows[0].tag.split(','):[];
-            delete rows[0].id;
-            resultMap[constants.DATA] = rows[0];
             resultMap[constants.CODE] = constants.SUCCESS_CODE;
           }
           res.json(resultMap);
@@ -205,5 +200,64 @@ module.exports = {
       resultMap[constants.MESSAGE] = constants.LOGIN_TIME_OUT;
       res.json(resultMap);
     }
-  }
+  },
+  /**
+   * 物理删除
+   */
+  physicsDelete: function (req, res, next) {
+    let resultMap = {};
+    let token = req.headers.token;
+    let user = verifyToken.verify(token);
+    if (user != null) {
+      pool.getConnection(function (err, connection) {
+        let _sql = `delete from note where id =  ?`;
+        let params = [hashidsUtil.decode(req.body._id, hashKeyObject.noteHashKey)];
+        _sql=mysql.format(_sql,params);
+        log.info(_sql);
+        connection.query(_sql, function (err, rows, result) {
+          if (err) {
+            resultMap[constants.CODE] = constants.FAIL_CODE;
+            resultMap[constants.MESSAGE] = constants.SYSTEM_ERROR;
+            log.error(err);
+          } else {
+            resultMap[constants.CODE] = constants.SUCCESS_CODE;
+          }
+          res.json(resultMap);
+          connection.release();
+        });
+      });
+    } else {
+      resultMap[constants.CODE] = constants.FAIL_CODE;
+      resultMap[constants.MESSAGE] = constants.LOGIN_TIME_OUT;
+      res.json(resultMap);
+    }
+  },
+  recovery: function (req, res, next) {
+    let resultMap = {};
+    let token = req.headers.token;
+    let user = verifyToken.verify(token);
+    if (user != null) {
+      pool.getConnection(function (err, connection) {
+        let _sql = `update note set status = 1 where id =  ?`;
+        let params = [hashidsUtil.decode(req.body._id, hashKeyObject.noteHashKey)];
+        _sql=mysql.format(_sql,params);
+        log.info(_sql);
+        connection.query(_sql, function (err, rows, result) {
+          if (err) {
+            resultMap[constants.CODE] = constants.FAIL_CODE;
+            resultMap[constants.MESSAGE] = constants.SYSTEM_ERROR;
+            log.error(err);
+          } else {
+            resultMap[constants.CODE] = constants.SUCCESS_CODE;
+          }
+          res.json(resultMap);
+          connection.release();
+        });
+      });
+    } else {
+      resultMap[constants.CODE] = constants.FAIL_CODE;
+      resultMap[constants.MESSAGE] = constants.LOGIN_TIME_OUT;
+      res.json(resultMap);
+    }
+  },
 };
