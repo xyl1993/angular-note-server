@@ -8,7 +8,8 @@ const constants = require('../config/constants');
 const config = require('../config/config');
 const jwt = require('jsonwebtoken');
 const secret = 'SUMMERNOTE';
-
+var bcrypt = require('bcrypt');  //加密对象
+const saltRounds = 10;   //慢哈希轮数
 /**
  * 登录成功后返回对象
  * @param {*} resultMap 
@@ -30,6 +31,15 @@ const loginSuccess = function (resultMap, userId, nikeName, portrait) {
     portrait: portrait
   }
   return resultMap;
+}
+
+const hashPassword = function (password) {
+  let newPassWord = '';
+  //返回hash加密后的字符串
+  bcrypt.hash(password, saltRounds, function (err, encryptPassword) {
+    newPassWord = encryptPassword;
+  });
+  return newPassWord;
 }
 
 module.exports = {
@@ -54,26 +64,28 @@ module.exports = {
               let userId = rows[0].id;
               //说明是第三方登录注册的邮箱
               //更新那条信息
-              let params = [
-                req.body.email,
-                req.body.password,
-                _date,
-                _date,
-                config.defaultImg,
-                userId
-              ];
-              let _sql = `update users set nike_name = ?,password=?,create_time=?,login_time=?,portrait=? where id = ?`;
-              _sql = mysql.format(_sql, params);
-              log.info(_sql);
-              connection.query(_sql, function (err, rows, result) {
-                if (err) {
-                  resultMap[constants.CODE] = constants.FAIL_CODE;
-                  resultMap[constants.MESSAGE] = constants.SYSTEM_ERROR;
-                  log.error(err);
-                } else {
-                  resultMap = loginSuccess(resultMap, userId, req.body.email, config.QNdomain + config.defaultImg);
-                }
-                res.json(resultMap);
+              bcrypt.hash(req.body.password, saltRounds, function (err, encryptPassword) {
+                let params = [
+                  req.body.email,
+                  encryptPassword,
+                  _date,
+                  _date,
+                  config.defaultImg,
+                  userId
+                ];
+                let _sql = `update users set nike_name = ?,password=?,create_time=?,login_time=?,portrait=? where id = ?`;
+                _sql = mysql.format(_sql, params);
+                log.info(_sql);
+                connection.query(_sql, function (err, rows, result) {
+                  if (err) {
+                    resultMap[constants.CODE] = constants.FAIL_CODE;
+                    resultMap[constants.MESSAGE] = constants.SYSTEM_ERROR;
+                    log.error(err);
+                  } else {
+                    resultMap = loginSuccess(resultMap, userId, req.body.email, config.QNdomain + config.defaultImg);
+                  }
+                  res.json(resultMap);
+                });
               });
             } else {
               //邮箱已被注册
@@ -84,24 +96,26 @@ module.exports = {
           } else {
             //没有邮箱 注册
             let _date = new Date();
-            let params = [
-              req.body.email,
-              req.body.email,
-              req.body.password,
-              _date,
-              _date,
-              config.defaultImg
-            ];
-            connection.query($sql.insertUsers, params, function (err, rows, result) {
-              if (err) {
-                resultMap[constants.CODE] = constants.FAIL_CODE;
-                resultMap[constants.MESSAGE] = constants.SYSTEM_ERROR;
-                log.error(err);
-              } else {
-                resultMap = loginSuccess(resultMap, rows.insertId, req.body.email, config.QNdomain + config.defaultImg);
-              }
-              res.json(resultMap);
-            });
+            bcrypt.hash(req.body.password, saltRounds, function (err, encryptPassword) {
+              let params = [
+                req.body.email,
+                req.body.email,
+                encryptPassword,
+                _date,
+                _date,
+                config.defaultImg
+              ];
+              connection.query($sql.insertUsers, params, function (err, rows, result) {
+                if (err) {
+                  resultMap[constants.CODE] = constants.FAIL_CODE;
+                  resultMap[constants.MESSAGE] = constants.SYSTEM_ERROR;
+                  log.error(err);
+                } else {
+                  resultMap = loginSuccess(resultMap, rows.insertId, req.body.email, config.QNdomain + config.defaultImg);
+                }
+                res.json(resultMap);
+              });
+            })
           }
         }
         connection.release();
@@ -194,24 +208,43 @@ module.exports = {
   dtlogin: function (req, res, next) {
     let resultMap = {};
     pool.getConnection(function (err, connection) {
-      let params = [
-        req.body.email,
-        req.body.password,
-      ]
-      connection.query($sql.dtlogin, params, function (err, rows, result) {
+      let _sql = `select * from users where email = ?`;
+      let params = [req.body.email];
+      _sql = mysql.format(_sql, params);
+      log.info(_sql);
+      connection.query(_sql, function (err, rows, result) {
         if (err) {
           resultMap[constants.CODE] = constants.FAIL_CODE;
           resultMap[constants.MESSAGE] = constants.SYSTEM_ERROR;
           log.error(err);
         } else {
           if (rows.length > 0) {
-            resultMap = loginSuccess(resultMap, rows[0].id, rows[0].nike_name, config.QNdomain + rows[0].portrait);
+            bcrypt.compare(req.body.password, rows[0].password, function (error, status) {
+              if (status === true) {
+                resultMap = loginSuccess(resultMap, rows[0].id, rows[0].nike_name, config.QNdomain + rows[0].portrait);
+                res.json(resultMap);
+                let updateLoginTime = `update users set login_time = ? where id=?`;
+                let params = [
+                  new Date(),
+                  rows[0].id
+                ];
+                updateLoginTime = mysql.format(updateLoginTime, params);
+                log.info(updateLoginTime);
+                connection.query(updateLoginTime, function (err, rows, result) {
+
+                });
+              } else {
+                resultMap[constants.CODE] = constants.FAIL_CODE;
+                resultMap[constants.MESSAGE] = constants.PASSWORDERR;
+                res.json(resultMap);
+              }
+            })
           } else {
             resultMap[constants.CODE] = constants.FAIL_CODE;
             resultMap[constants.MESSAGE] = constants.NOUSER;
+            res.json(resultMap);
           }
         }
-        res.json(resultMap);
         connection.release();
       });
     });
