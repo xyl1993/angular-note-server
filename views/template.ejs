@@ -1,12 +1,42 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
-  <title><%= title %></title>
+  <title>
+    <%= title %>
+  </title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <style>
+    /* You can add global styles to this file, and also import other style files */
+    * {
+      margin: 0px;
+      padding: 0px;
+      -webkit-box-sizing: border-box;
+      -moz-box-sizing: border-box;
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+      width: 100%;
+    }
+
+    body {
+      margin: 0;
+      font-family: Helvetica, "Hiragino Sans GB", "微软雅黑", "Microsoft YaHei UI", SimSun, SimHei, arial, sans-serif;
+      font-size: 14px;
+      background: #E6EBF5;
+    }
+  </style>
 </head>
+
 <body>
-  <div><%- content %></div>
+  <div>
+    <%- content %>
+  </div>
 </body>
+
 </html>
