@@ -1,6 +1,7 @@
 # angular-note-server
 仿未知笔记服务端。基于express实现(开发中)
 
+>项目地址：http://47.98.243.170:3001
 npm install
 
 # 开发模式启动
@@ -10,7 +11,7 @@ npm run debug
 npm start
 
 # 数据库配置文件
-db.js
+config/db.js
 // MySQL数据库联接配置
 module.exports = {
 	mysql: {
