@@ -28,7 +28,7 @@ CREATE TABLE `users` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `email` varchar(32) DEFAULT NULL,
   `nike_name` varchar(20) DEFAULT NULL,
-  `password` varchar(32) DEFAULT NULL,
+  `password` varchar(100) DEFAULT NULL,
   `create_time` datetime DEFAULT NULL,
   `login_time` datetime DEFAULT NULL,
   `portrait` varchar(1000) DEFAULT NULL,
