@@ -28,13 +28,26 @@
       margin: 0;
       font-family: Helvetica, "Hiragino Sans GB", "微软雅黑", "Microsoft YaHei UI", SimSun, SimHei, arial, sans-serif;
       font-size: 14px;
-      background: #E6EBF5;
+      background: #fff;
+    }
+
+    img {
+      max-width: 100% !important;
+    }
+
+    pre {
+      max-width: 100%;
+    }
+    .cointer{
+      width: 100%;
+      overflow: auto;
+      padding: 15px;
     }
   </style>
 </head>
 
 <body>
-  <div>
+  <div class="cointer">
     <%- content %>
   </div>
 </body>
