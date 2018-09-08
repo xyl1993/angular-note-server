@@ -1,0 +1,206 @@
+/* You can add global styles to this file, and also import other style files */
+
+* {
+  margin: 0px;
+  padding: 0px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Helvetica, "Hiragino Sans GB", "微软雅黑", "Microsoft YaHei UI", SimSun, SimHei, arial, sans-serif;
+  font-size: 14px;
+  background: #E6EBF5;
+}
+
+input,
+button,
+select,
+textarea,
+a {
+  outline: none;
+}
+
+ul,
+li {
+  list-style: none;
+}
+
+textarea {
+  resize: none;
+}
+
+.clear:after {
+  clear: both;
+  content: "";
+  display: table;
+}
+
+input:-webkit-autofill {
+  background-color: #fff;
+  -webkit-box-shadow: 0 0 0px 1000px white inset;
+}
+
+.multiLine-text {
+  white-space: normal;
+  word-break: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  /*! autoprefixer: off */
+  -webkit-box-orient: vertical;
+  /* autoprefixer: on */
+}
+
+app-cointer {
+  width: 100%;
+}
+
+.word-wrap {}
+
+.text-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.my-icon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  background-image: url(assets/images/icon-grey.a11282ce.png);
+}
+
+.active .my-icon {
+  background-image: url(assets/images/icon-blue.d76c51c0.png);
+}
+
+.icon-msz {
+  width: 20px;
+  height: 20px;
+}
+
+.icon-write-fat {
+  background-position: -25px -225px;
+}
+
+.icon-to-right {
+  background-position: 0 0;
+}
+
+.icon-to-left {
+  background-position: -25px 0;
+}
+
+.icon-search {
+  background-position: 0 -275px;
+}
+
+.icon-share-fat {
+  background-position: -75px -225px;
+}
+
+.icon-sort-modify {
+  background-position: -100px -150px;
+}
+
+.icon-angle-down {
+  background-position: -50px 0;
+}
+
+.icon-doc {
+  background-position: -50px -125px;
+}
+
+.icon-share {
+  background-position: -150px 0;
+}
+
+.icon-fulls {
+  background-position: -225px 0;
+}
+
+.icon-info-circle {
+  background-position: -150px -25px;
+}
+
+.icon-clock {
+  background-position: -175px 0;
+}
+
+.icon-trash {
+  background-position: -175px -25px;
+}
+
+.icon-add-circle {
+  background-position: -200px -50px;
+}
+
+.icon-revent {
+  background-position: -126px -25px;
+}
+
+/***********quill配置***************/
+
+.quill-editor {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  word-wrap: break-word;
+  word-break: break-all;
+}
+
+.ql-container {
+  overflow: auto;
+}
+
+.ql-container.ql-snow {
+  border: none;
+}
+
+.ql-toolbar.ql-snow {
+  border: none;
+  border-bottom: 1px solid #ccc;
+}
+
+.ql-editor p {
+  width: 100%;
+}
+
+.ql-snow .ql-editor pre {
+  width: 100%;
+  overflow: auto !important;
+  white-space: pre;
+}
+
+/************quill配置**************/
+
+/***********ng 标签插件设置**********/
+
+.ng2-tag-input {
+  padding-bottom: 0;
+  margin-bottom: 10px;
+}
+
+tag {
+  height: 30px;
+  line-height: 30px;
+  padding: .04rem .45rem;
+}
+
+.ng2-tag-input {
+  padding-bottom: 0px;
+}
