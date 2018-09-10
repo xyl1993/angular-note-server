@@ -17,9 +17,10 @@ const saltRounds = 10;   //慢哈希轮数
  * @param {*} nikeName 
  * @param {*} portrait 
  */
-const loginSuccess = function (resultMap, userId, nikeName, portrait) {
+const loginSuccess = function (resultMap, userId, nikeName, portrait,openId) {
   const payload = {
-    userId: userId
+    userId: userId,
+    openId:openId
   }
   // 签发 Token
   const token = jwt.sign(payload, secret, { expiresIn: '1day' })
@@ -163,7 +164,7 @@ module.exports = {
             if (userId) {
               //说明绑定了邮箱
               // 签发 Token
-              resultMap = loginSuccess(resultMap, userId, req.nikeName, req.portrait);
+              resultMap = loginSuccess(resultMap, userId, req.nikeName, req.portrait,req.openId);
             } else {
               // let path = `${config.appServerIp}/page/bindEmail?openId=${req.openId}`;
               // //跳转到绑定邮箱的页面
@@ -286,7 +287,7 @@ module.exports = {
                   resultMap[constants.MESSAGE] = constants.SYSTEM_ERROR;
                   log.error(err);
                 } else {
-                  resultMap = loginSuccess(resultMap, userInfo.userId, userInfo.nike_name, userInfo.portrait);
+                  resultMap = loginSuccess(resultMap, userInfo.userId, userInfo.nike_name, userInfo.portrait,req.body.openId);
                   res.json(resultMap);
                 }
               });
@@ -320,7 +321,7 @@ module.exports = {
                     }
                   });
                   //更新第三方登录表的userid
-                  resultMap = loginSuccess(resultMap, rows.insertId, userInfo.nike_name, userInfo.portrait);
+                  resultMap = loginSuccess(resultMap, rows.insertId, userInfo.nike_name, userInfo.portrait,req.body.openId);
                   res.json(resultMap);
                 }
               });

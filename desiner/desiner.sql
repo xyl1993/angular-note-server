@@ -72,5 +72,6 @@ CREATE TABLE `note` (
   `create_time` datetime DEFAULT NULL,
   `modify_time` datetime DEFAULT NULL,
   `status` bit DEFAULT 1,    /*1表示正常 0表示已被删除（回收站功能30天自动清理删除数据）*/
+  `open_id` varchar(200) DEFAULT NULL, /*OPENID*/
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

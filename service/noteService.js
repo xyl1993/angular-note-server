@@ -24,7 +24,8 @@ module.exports = {
           file: req.body.file,
           userId: user.userId,
           create_time: new Date(),
-          preview_content:req.body.preview_content
+          preview_content:req.body.preview_content,
+          open_id:user.openId
         }
         let params = [];
         Object.keys(requestBody).forEach(function (key) {

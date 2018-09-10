@@ -8,18 +8,136 @@
   </title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
-  <link rel="stylesheet" href="aejsStyles/template.css">
   <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://at.alicdn.com/t/font_805836_phd6xifv5f.css">
+  <link rel="stylesheet" href="aejsStyles/template.css">
 </head>
 
 <body>
-  <div class="cointer">
-    <div class="notecontent-layer ql-container ql-snow">
-      <div class="ql-editor word-wrap">
-        <%- content %>
+  <div class="summer">
+    <div class="main-header-box">
+      <header class="main-header">
+        <div class="container">
+          <a class="logo" href="/">
+            <img src="aejsStyles/images/logo.png" alt="">
+          </a>
+        </div>
+      </header>
+    </div>
+    <div class="container main-container">
+      <div class="view column-view">
+        <div class="main-area article-area">
+          <div class="article">
+            <!-- 内容部分 -->
+            <div class="notecontent-layer ql-container ql-snow">
+              <div class="ql-editor word-wrap">
+                <%- content %>
+              </div>
+            </div>
+            <!-- 内容部分end -->
+          </div>
+        </div>
+        <div class="sidebar">
+          <div class="sidebar-block shadow">
+            <div class="block-title">
+              关于作者
+            </div>
+            <div class="block-body">
+              <div class="user-item">
+                <div class="avator">
+                  <img src="<%= userInfo.portrait %>" alt="">
+                </div>
+                <div class="info-box">
+                  <%= userInfo.nike_name %>
+                </div>
+              </div>
+            </div>
+            <div class="start-item item">
+              <div class="info-round">
+                <i class="iconfont icon-aixin1"></i>
+              </div>
+              <span>喜欢数9,365</span>
+            </div>
+            <div class="start-item item">
+              <div class="info-round">
+                <i class="iconfont icon-yanjing"></i>
+              </div>
+              <span>阅读数9,365</span>
+            </div>
+          </div>
+        </div>
+        <div class="article-suspended-panel">
+          <div class="panel-btn with-badge" badge="24">
+            <i class="iconfont icon-aixin1"></i>
+          </div>
+          <div class="panel-btn with-badge" badge="3">
+            <i class="iconfont icon-pingluncomment43"></i>
+          </div>
+          <div class="share-title">分享</div>
+          <div class="panel-btn">
+            <i class="iconfont icon-qq-copy"></i>
+          </div>
+          <div class="panel-btn">
+            <i class="iconfont icon-weixin"></i>
+          </div>
+        </div>
       </div>
+    </div>
+    <div class="suspension-panel">
+      <button title="回到顶部" class="btn to-top-btn" id="toTop">
+        <i class="iconfont icon-xiaotuziCduan_"></i>
+      </button>
+      <button title="建议反馈" class="btn meiqia-btn">
+        <i class="iconfont icon-pinglun"></i>
+      </button>
     </div>
   </div>
 </body>
+<!-- <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+  crossorigin="anonymous"></script> -->
+<script>
+  window.onload = function () {
+    var obtn = document.getElementById('toTop');
+    var timer = null;
+    var isTop = true;
+    //获取页面的可视窗口高度
+    var clientHeight = document.documentElement.clientHeight || document.body.clientHeight;
+
+    //滚动条滚动时触发
+    window.onscroll = function () {
+      //在滚动的时候增加判断
+      var osTop = document.documentElement.scrollTop || document.body.scrollTop;//特别注意这句，忘了的话很容易出错
+      if (osTop >= clientHeight) {
+        obtn.style.display = 'block';
+      } else {
+        obtn.style.display = 'none';
+      }
+
+      if (!isTop) {
+        clearInterval(timer);
+      }
+      isTop = false;
+    };
+    obtn.onclick = function () {
+      //设置定时器
+      timer = setInterval(function () {
+        //获取滚动条距离顶部的高度
+        var osTop = document.documentElement.scrollTop || document.body.scrollTop;  //同时兼容了ie和Chrome浏览器
+
+        //减小的速度
+        var isSpeed = Math.floor(-osTop / 6);
+        document.documentElement.scrollTop = document.body.scrollTop = osTop + isSpeed;
+        //console.log( osTop + isSpeed);
+
+        isTop = true;
+
+        //判断，然后清除定时器
+        if (osTop == 0) {
+          clearInterval(timer);
+        }
+      }, 30);
+    };
+  }
+</script>
 
 </html>
