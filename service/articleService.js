@@ -16,7 +16,7 @@ module.exports = {
       let params = [
         req.query._id ? hashidsUtil.decode(req.query._id, hashKeyObject.noteHashKey) : ''
       ]
-      let _sql = 'select a.*,IFNULL(c.nike_name,b.nike_name) nike_name,c.portrait as third_portrait,c.portrait as user_portrait from note a left join users b on a.create_id = b.id left join open_users c on c.open_id = a.open_id where a.id = ?';
+      let _sql = 'select a.*,IFNULL(c.nike_name,b.nike_name) nike_name,c.portrait as third_portrait,b.portrait as user_portrait from note a left join users b on a.create_id = b.id left join open_users c on c.open_id = a.open_id where a.id = ?';
       _sql = mysql.format(_sql, params);
       log.info(_sql);
       connection.query(_sql, function (err, rows, result) {
