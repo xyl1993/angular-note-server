@@ -210,7 +210,6 @@ app-cointer {
   width: 4.167rem;
   border-radius: 50%;
   overflow: hidden;
-  margin-right: 1rem;
 }
 
 .avator img {
@@ -226,6 +225,8 @@ app-cointer {
   overflow: hidden;
   text-overflow: ellipsis;
   line-height: 4.167rem;
+  flex: 1;
+  padding-left: .167rem;
 }
 
 .info-round {
