@@ -1,0 +1,17 @@
+{
+  "presets": [
+    ["es2015","vue-app"],
+    "stage-0"
+  ],
+  "plugins": ["syntax-dynamic-import","transform-runtime","transform-vue-jsx"],
+  "comments": false,
+  "env": {
+    "test": {
+      "plugins": [ "istanbul" ]
+    },
+    "production": {
+      "plugins": ["transform-react-constant-elements"]
+    }
+  }
+}
+

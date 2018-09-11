@@ -18,18 +18,16 @@ const OptimizeCSSPlugin = require('optimize-css-assets-webpack-plugin')
 
 var path = require('path');
 var ROOT_PATH = path.resolve(__dirname);
-var utils = function (_path) {
+var assetsPath = function (_path) {
   var assetsSubDirectory = 'static';
   return path.posix.join(assetsSubDirectory, _path)
 };
 
 var publicPath = './';
-function resolve(dir) {
-  return path.join(__dirname, '..', dir)
-}
+
 module.exports = {
   entry: {
-    home: resolve(__dirname, "public/aejsStyles/index.js")
+    home: path.resolve(ROOT_PATH, "public/aejsStyles/index.js")
   },
   output: {
     path: path.resolve(ROOT_PATH, './dist'),
@@ -38,6 +36,15 @@ module.exports = {
   },
   module: {
     rules: [
+      {
+        test: /\.ejs$/,
+        loader: 'ejs-loader',
+        query: {
+          variable: 'data',
+          interpolate: '\\{\\{(.+?)\\}\\}',
+          evaluate: '\\[\\[(.+?)\\]\\]'
+        }
+      },
       {
         test: /\.css$/,
         use: [
@@ -74,10 +81,10 @@ module.exports = {
       },
       {
         test: /\.(png|jpg|gif|cur)$/,
-        use: ["url-loader?limit=8192&name=" + utils.assetsPath('images/[hash:8].[name].[ext]')]
+        use: ["url-loader?limit=8192&name=" + assetsPath('images/[hash:8].[name].[ext]')]
       }, {
         test: /\.(woff|woff2|eot|ttf|otf|svg)(\?.*$|$)/,
-        use: ["url-loader?importLoaders=1&limit=80000&name=" + utils.assetsPath('fonts/[name].[ext]')]
+        use: ["url-loader?importLoaders=1&limit=80000&name=" + assetsPath('fonts/[name].[ext]')]
       },
       {
         test: /\.html$/,
@@ -118,7 +125,7 @@ module.exports = {
     new ExtractTextPlugin('[name].[contenthash].css'),
     //在 plugins 中添加
     new MiniCssExtractPlugin({
-      filename: utils.assetsPath("css/[name]_[chunkhash].css")
+      filename: assetsPath("css/[name]_[chunkhash].css")
     }),
     //在 plugin 中添加
     new CompressionWebpackPlugin({ //gzip 压缩
@@ -131,16 +138,13 @@ module.exports = {
       minRatio: 0.8
     }),
     new HtmlWebpackPlugin({
+      title: '按照ejs模板生成出来的页面',
+      filename: 'index.html',
       template: path.resolve(ROOT_PATH, './views/template.ejs'),
-      filename: 'template.ejs',
       favicon: path.resolve(ROOT_PATH, './public/aejsStyles/images/logo.png'),
-      inject: true, // 自动注入
-      minify: {
-        removeComments: true,        //去注释
-        collapseWhitespace: true,    //压缩空格
-        removeAttributeQuotes: true  //去除属性引用
-      }
+      
     }),
+
     // /*多进程压缩打包*/
     new HappyPack({ //开启多线程打包
       id: 'happy-babel-js',
