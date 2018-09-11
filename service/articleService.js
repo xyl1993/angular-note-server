@@ -3,11 +3,9 @@ var $conf = require('../config/db');
 var log = require('log4js').getLogger("articleService");
 // 使用连接池，提升性能
 var pool = mysql.createPool($conf.mysql);
-const constants = require('../config/constants');
-const config = require('../config/config');
 const hashidsUtil = require('../utils/hashidsUtili');
 const hashKeyObject = require('../config/hashKey');
-
+const config = require('../config/config');
 module.exports = {
   selectDetail: function (req, res, next) {
     var resultMap = {
@@ -18,7 +16,7 @@ module.exports = {
       let params = [
         req.query._id ? hashidsUtil.decode(req.query._id, hashKeyObject.noteHashKey) : ''
       ]
-      let _sql = 'select a.*,IFNULL(c.nike_name,b.nike_name) nike_name,IFNULL(c.portrait,b.portrait) portrait from note a left join users b on a.create_id = b.id left join open_users c on c.open_id = a.open_id where a.id = ?';
+      let _sql = 'select a.*,IFNULL(c.nike_name,b.nike_name) nike_name,c.portrait as third_portrait,c.portrait as user_portrait from note a left join users b on a.create_id = b.id left join open_users c on c.open_id = a.open_id where a.id = ?';
       _sql = mysql.format(_sql, params);
       log.info(_sql);
       connection.query(_sql, function (err, rows, result) {
@@ -35,10 +33,10 @@ module.exports = {
             resultMap.renderName = 'template';
             resultMap.renderObj = {
               title: detail.title,
-              content:detail.content,
-              userInfo:{
-                nike_name:detail.nike_name,
-                portrait:detail.portrait
+              content: detail.content,
+              userInfo: {
+                nike_name: detail.nike_name,
+                portrait: detail.third_portrait ? detail.third_portrait : config.QNdomain + detail.user_portrait
               }
             }
           } else {
