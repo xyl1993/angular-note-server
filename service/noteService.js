@@ -101,7 +101,16 @@ module.exports = {
         // 建立连接，向表中插入值
         let _sql = `select id,title,preview_content,create_time from note where create_id = ? and status = ?`;
         _sql = req.body.keyword ? _sql + ` and (content like '%${req.body.keyword}%' or title like '%${req.body.keyword}%')` : _sql;
-        _sql = _sql+' order by create_time desc';
+        if(req.body.sortType === 1){
+          //创建日期排序
+          _sql = _sql+` order by create_time ${req.body.sortStatus}`;
+        }else if(req.body.sortType === 2){
+          //修改日期排序
+          _sql = _sql+` order by modify_time ${req.body.sortStatus}`;
+        }else{
+          //标题排序
+          _sql = _sql+` order by title ${req.body.sortStatus}`;
+        }
         let params = [user.userId,req.body.status];
         if(req.body.keyword){
           params.push(req.body.keyword);
@@ -137,15 +146,17 @@ module.exports = {
     let user = verifyToken.verify(token);
     if (user != null) {
       pool.getConnection(function (err, connection) {
-        let _sql = `select 
-          id,
-          title,
-          tag,
-          ifnull(content,'') as content,
-          file,
-          create_time,
-          modify_time
-        from note where id = ?`;
+        let _sql = `select a.id,a.title,a.tag,
+            ifnull(a.content,'') as content,
+          a.file,a.create_time,a.modify_time,
+          IFNULL(c.nike_name,b.nike_name) nike_name,
+          c.portrait as third_portrait,
+          b.portrait as user_portrait 
+          from note a 
+          left join users b on a.create_id = b.id 
+          left join open_users c on c.open_id = a.open_id 
+          where a.id = ?`;
+
         let params = [hashidsUtil.decode(req.body._id, hashKeyObject.noteHashKey)];
         _sql = mysql.format(_sql,params);
         log.info(_sql);
