@@ -75,3 +75,35 @@ CREATE TABLE `note` (
   `open_id` varchar(200) DEFAULT NULL, /*OPENID*/
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+/*评论表*/
+DROP TABLE IF EXISTS  `comments`;
+CREATE TABLE `comments` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `article_id` bigint(20) NOT NULL,
+  `comment_body` varchar(500) DEFAULT NULL,
+  `create_id` bigint(20) NOT NULL,
+  `create_time` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*评论父子关系表*/
+DROP TABLE IF EXISTS  `comments_tree`;
+CREATE TABLE `comments_tree` (
+  `ancestor` bigint(20) NOT NULL,     /*代表祖先节点*/
+  `descendant` bigint(20) NOT NULL,   /*代表后代节点*/
+  `distance ` bigint(20) NOT NULL,  /*祖先距离后代的距离*/
+  PRIMARY KEY (`ancestor`,`descendant`),
+  KEY `descendant` (`descendant`),
+  CONSTRAINT `ancestor` FOREIGN KEY (`ancestor`) REFERENCES `comments` (`id`),
+  CONSTRAINT `descendant` FOREIGN KEY (`descendant`) REFERENCES `comments` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+drop table if exists `contents`;
+CREATE TABLE `contents` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,  /*id*/
+  `name` varchar(100) DEFAULT NULL,  /*目录名称*/
+  `parent_id` bigint(20) DEFAULT NULL,  /*父id*/
+  `create_id` bigint(20) NOT NULL,   /*创建人*/
+  `create_time` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

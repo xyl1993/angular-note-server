@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" ng-app="main">
 
 <head>
   <meta charset="utf-8">
@@ -14,7 +14,7 @@
 </head>
 
 <body>
-  <div class="summer">
+  <div class="summer" ng-controller="summerController">
     <div class="main-header-box">
       <header class="main-header">
         <div class="container">
@@ -35,6 +35,20 @@
               </div>
             </div>
             <!-- 内容部分end -->
+            <!--  评论部分 -->
+            <div class="comment-cointer">
+              <p class="comment-title">评论</p>
+              <div class="edit-cointer comment-form">
+                <div class="avator"></div>
+                <textarea class="content-input" placeholder="说说你的看法" ng-model="content"></textarea>
+                <div class="action-box">
+                  <div class="submit-box">
+                    <span data-v-efcd2e56="" class="submit-text">Ctrl or ⌘ + Enter</span>
+                    <button data-v-efcd2e56="" class="submit-btn" ng-click="comment()">评论</button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         <div class="sidebar">
@@ -93,8 +107,15 @@
     </div>
   </div>
 </body>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.2/angular.min.js"></script>
 <script>
-  window.onload = function () {
+  var mainModule = angular.module('main', []);
+  function GetQueryString(name) {
+    var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+    var r = window.location.search.substr(1).match(reg);
+    if (r != null) return unescape(r[2]); return null;
+  }
+  mainModule.controller('summerController', ['$scope', '$log', '$http', function ($scope, $log, $http) {
     var obtn = document.getElementById('toTop');
     var timer = null;
     var isTop = true;
@@ -135,7 +156,36 @@
         }
       }, 30);
     };
-  }
+
+    $scope.content = '';
+    let token = localStorage.getItem('noteToken');
+    //评论
+    $scope.comment = function () {
+      let data = {
+        articleId: GetQueryString('_id'),
+        ancestor:34,
+        commentBody: $scope.content.replace(/\n/g, "").trim()
+      }
+      $http(
+        {
+          method: 'POST',
+          url: '/api/note/comment',
+          headers: {
+            'Content-Type': 'application/json',
+            'token': token
+          },
+          data: data
+        }
+      ).then(
+        function (res) {
+          console.log(res);
+        },
+        function (err) {
+
+        }
+      )
+    }
+  }])
 </script>
 
 </html>

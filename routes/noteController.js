@@ -40,6 +40,13 @@ router.post('/physicsDelete', function (req, res, next) {
 router.post('/recovery', function (req, res, next) {
   return service.recovery(req, res, next);
 });
+/**
+ * 评论
+ */
+router.post('/comment', function (req, res, next) {
+  return service.comment(req, res, next);
+});
+
 
 /**
  * 接收前台file文件上传到七牛云
@@ -75,7 +82,10 @@ router.post('/upload', function (req, res, next) {
           return res.json(resultMap);
         }
         resultMap[constants.CODE] = constants.SUCCESS_CODE;
-        resultMap[constants.URL] = filePath;
+        resultMap[constants.DATA] = {
+          url:QNdomain+filePath
+        };
+        // resultMap['url'] = filePath;
         return res.json(resultMap);
       });
     } else {
