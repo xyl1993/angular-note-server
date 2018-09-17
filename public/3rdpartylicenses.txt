@@ -325,7 +325,7 @@ Apache License
  See the License for the specific language governing permissions and
  limitations under the License.
 
-@angular/animations@7.0.0-beta.2
+@angular/animations@7.0.0-beta.5
 MIT
 MIT
 
