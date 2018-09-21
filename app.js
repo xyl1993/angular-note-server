@@ -1,27 +1,30 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
-var ejs = require('ejs');  //我是新引入的ejs插件
+const createError = require('http-errors');
+const express = require('express');
+const mongoose = require('mongoose');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
+const ejs = require('ejs');  //我是新引入的ejs插件
 const log4js = require('log4js');
-var logger = require('./log4js');
+const logger = require('./log4js');
 
-var oAuthRouter = require('./routes/oAuthRouter');
-var articleRouter = require('./routes/articleRouter');
-var loginRouter = require('./routes/loginController');
-var noteController = require('./routes/noteController');
-var middleRouter = require('./routes/middle');
+const config = require('./config/environment');
+
+const oAuthRouter = require('./routes/oAuthRouter');
+const articleRouter = require('./routes/articleRouter');
+const loginRouter = require('./routes/loginController');
+const noteController = require('./routes/noteController');
+const middleRouter = require('./routes/middle');
 
 var app = express();
 
 //Set up mongoose connection
-var mongoose = require('mongoose');
-var mongoDB = 'mongodb://602165057:xyl19930418@ds261072.mlab.com:61072/summer_note';
-mongoose.connect(mongoDB);
-mongoose.Promise = global.Promise;
-var db = mongoose.connection;
-db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+mongoose.connect(config.mongo.uri, config.mongo.options);
+mongoose.connection.on('error', function(err) {
+        console.error('MongoDB connection error: ' + err);
+        process.exit(-1);
+    }
+);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
