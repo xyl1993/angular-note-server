@@ -9,272 +9,142 @@ const verifyToken = require('../utils/verifyToken');
 const hashidsUtil = require('../utils/hashidsUtili');
 const hashKeyObject = require('../config/hashKey');
 const async = require("async");
+const {
+  model: Note
+} = require('../models/note');
+const {
+  model: User
+} = require('../models/user');
+function handleError(res, err) {
+  return res.status(constants.FAIL_CODE).send(err);
+}
+
+
 module.exports = {
   addNote: function (req, res, next) {
-    let resultMap = {};
-    let token = req.headers.token;
-    let user = verifyToken.verify(token);
-    log.info(user);
-    if (user != null) {
-      pool.getConnection(function (err, connection) {
-        // 建立连接，向表中插入值
-        let requestBody = {
-          title: req.body.title,
-          tag: req.body.tag ? req.body.tag.toString() : undefined,
-          content: req.body.content ? req.body.content : '',
-          file: req.body.file,
-          userId: user.userId,
-          create_time: new Date(),
-          preview_content: req.body.preview_content,
-          open_id: user.openId
-        }
-        let params = [];
-        Object.keys(requestBody).forEach(function (key) {
-          params.push(requestBody[key]);
-        });
+    let requestBody = req.body;
+    requestBody.tag = req.body.tag ? req.body.tag.toString() : undefined;
+    requestBody.content = req.body.content ? req.body.content : '';
+    requestBody.openId = req.openId;
+    requestBody.modifyAt = new Date();
 
-        log.info($sql.addNote);
-        connection.query($sql.addNote, params, function (err, rows, result) {
-          if (err) {
-            resultMap[constants.CODE] = constants.FAIL_CODE;
-            resultMap[constants.MESSAGE] = constants.SYSTEM_ERROR;
-            log.error(err);
-          } else {
-            let insertId = rows.insertId;//获取自动生成的id
-            requestBody._id = hashidsUtil.encode(insertId, hashKeyObject.noteHashKey);
-            resultMap[constants.DATA] = requestBody;
-            resultMap[constants.CODE] = constants.SUCCESS_CODE;
-          }
-          res.json(resultMap);
-          connection.release();
-        });
-      });
-    } else {
-      resultMap[constants.CODE] = constants.FAIL_CODE;
-      resultMap[constants.MESSAGE] = constants.LOGIN_TIME_OUT;
-      res.json(resultMap);
-    }
+    const newNote = new Note(requestBody);
+
+    newNote.save(function (err, note) {
+      if (err) return handleError(res, err);
+      res.status(constants.SUCCESS_CODE).json(note);
+    })
+
   },
   editNote: function (req, res, next) {
-    let resultMap = {};
-    let token = req.headers.token;
-    let user = verifyToken.verify(token);
-    log.info(user);
-    if (user != null) {
-      let requestBody = req.body;
-      pool.getConnection(function (err, connection) {
-        let params = [
-          requestBody.title,
-          requestBody.tag ? requestBody.tag.join() : undefined,
-          requestBody.content,
-          requestBody.preview_content,
-          requestBody.file,
-          new Date(),
-          hashidsUtil.decode(requestBody._id, hashKeyObject.noteHashKey)
-        ];
-        let _sql = 'update note set title= ?,tag=?,content=?,preview_content=?,file=?,modify_time=? where id = ?';
-        _sql = mysql.format(_sql, params);
-        log.info(_sql);
-        connection.query(_sql, function (err, rows, result) {
-          if (err) {
-            resultMap[constants.CODE] = constants.FAIL_CODE;
-            resultMap[constants.MESSAGE] = constants.SYSTEM_ERROR;
-            log.error(err);
-          } else {
-            resultMap[constants.CODE] = constants.SUCCESS_CODE;
-          }
-          res.json(resultMap);
-          connection.release();
-        });
-      });
-    } else {
-      resultMap[constants.CODE] = constants.FAIL_CODE;
-      resultMap[constants.MESSAGE] = constants.LOGIN_TIME_OUT;
-      res.json(resultMap);
-    }
+    let requestBody = req.body;
+    requestBody.tag = requestBody.tag ? requestBody.tag.join() : undefined;
+    requestBody.modifyAt = new Date();
+
+    Note.updateOne({
+      _id: req.params.noteId
+    }, {
+      '$set': {
+        requestBody
+      },
+      function (err, note) {
+        if (err) return handleError(res, err);
+        res.status(200).json('note edit');
+      }
+    })
   },
   selNoteList: function (req, res, next) {
-    let resultMap = {};
-    let token = req.headers.token;
-    let user = verifyToken.verify(token);
-    if (user != null) {
-      pool.getConnection(function (err, connection) {
-        // 建立连接，向表中插入值
-        let _sql = `select id,title,preview_content,create_time from note where create_id = ? and status = ?`;
-        _sql = req.body.keyword ? _sql + ` and (content like '%${req.body.keyword}%' or title like '%${req.body.keyword}%')` : _sql;
-        if (req.body.sortType === 1) {
-          //创建日期排序
-          _sql = _sql + ` order by create_time ${req.body.sortStatus}`;
-        } else if (req.body.sortType === 2) {
-          //修改日期排序
-          _sql = _sql + ` order by modify_time ${req.body.sortStatus}`;
-        } else {
-          //标题排序
-          _sql = _sql + ` order by title ${req.body.sortStatus}`;
-        }
-        let params = [user.userId, req.body.status];
-        if (req.body.keyword) {
-          params.push(req.body.keyword);
-        }
-        _sql = mysql.format(_sql, params);
-        log.info(_sql);
-        connection.query(_sql, function (err, rows, result) {
-          if (err) {
-            resultMap[constants.CODE] = constants.FAIL_CODE;
-            resultMap[constants.MESSAGE] = constants.SYSTEM_ERROR;
-            log.error(err);
-          } else {
-            for (let item of rows) {
-              item._id = hashidsUtil.encode(item.id, hashKeyObject.noteHashKey);
-              delete item.id;
-            }
-            resultMap[constants.DATA] = rows;
-            resultMap[constants.CODE] = constants.SUCCESS_CODE;
-          }
-          res.json(resultMap);
-          connection.release();
-        });
-      });
-    } else {
-      resultMap[constants.CODE] = constants.FAIL_CODE;
-      resultMap[constants.MESSAGE] = constants.LOGIN_TIME_OUT;
-      res.json(resultMap);
+    let params = {
+      createId:req.userId,
+      status: req.body.status,
+      content:{
+        $regex:req.body.keyword
+      },
+      title:{
+        $regex:req.body.keyword
+      }
     }
+    let sort = {};
+    if (req.body.sortType === 1) {
+      //创建日期排序
+      sort = {
+        createAt:req.body.sortStatus
+      }
+    } else if (req.body.sortType === 2) {
+      //修改日期排序
+      sort = {
+        modifyAt:req.body.sortStatus
+      }
+    } else {
+      //标题排序
+      sort = {
+        title:req.body.sortStatus
+      }
+    }
+    Note.find().sort(sort).exec(function(err,noteList){
+      if (err) return handleError(res, err);
+      res.status(200).json(noteList)
+    })
+
   },
   selNoteDetail: function (req, res, next) {
-    let resultMap = {};
-    let token = req.headers.token;
-    let user = verifyToken.verify(token);
-    if (user != null) {
-      pool.getConnection(function (err, connection) {
-        let _sql = `select a.id,a.title,a.tag,
-            ifnull(a.content,'') as content,
-          a.file,a.create_time,a.modify_time,
-          IFNULL(c.nike_name,b.nike_name) nike_name,
-          c.portrait as third_portrait,
-          b.portrait as user_portrait 
-          from note a 
-          left join users b on a.create_id = b.id 
-          left join open_users c on c.open_id = a.open_id 
-          where a.id = ?`;
-
-        let params = [hashidsUtil.decode(req.body._id, hashKeyObject.noteHashKey)];
-        _sql = mysql.format(_sql, params);
-        log.info(_sql);
-        connection.query(_sql, function (err, rows, result) {
-          if (err) {
-            resultMap[constants.CODE] = constants.FAIL_CODE;
-            resultMap[constants.MESSAGE] = constants.SYSTEM_ERROR;
-            log.error(err);
-          } else {
-            rows[0]._id = hashidsUtil.encode(rows[0].id, hashKeyObject.noteHashKey);
-            rows[0].tag = rows[0].tag ? rows[0].tag.split(',') : [];
-            delete rows[0].id;
-            resultMap[constants.DATA] = rows[0];
-            resultMap[constants.CODE] = constants.SUCCESS_CODE;
-          }
-          res.json(resultMap);
-          connection.release();
-        });
-      });
-    } else {
-      resultMap[constants.CODE] = constants.FAIL_CODE;
-      resultMap[constants.MESSAGE] = constants.LOGIN_TIME_OUT;
-      res.json(resultMap);
-    }
+    Note.findOne({_id:req.params.noteId},function(err,note){
+      if (err) return handleError(res, err);
+      User.findOne({_id:note.createId},function(err,user){
+        let responseBody = {};
+        if(note.openId){
+          user.openUser.filter(function(openUser) {
+            return openUser.openId = note.openId
+          })
+          responseBody.nikeName = user.openUser[0].nikeName
+          responseBody.thirdPortrait = user.openUser[0].portrait
+        }
+        responseBody.userPortrait = user.portrait;
+        responseBody._id = note._id;
+        responseBody.title = note.title;
+        responseBody.content = note.content?note.content:'';
+        responseBody.file = note.file;
+        responseBody.createAt = note.createAt;
+        responseBody.modifyAt = note.modifyAt;
+        if (err) return handleError(res, err);
+        res.status(200).json(responseBody);
+      })
+    })
   },
   /**
    * 逻辑删除
    */
   logicDelete: function (req, res, next) {
-    let resultMap = {};
-    let token = req.headers.token;
-    let user = verifyToken.verify(token);
-    if (user != null) {
-      pool.getConnection(function (err, connection) {
-        let _sql = `update note set status = 0 where id =  ?`;
-        let params = [hashidsUtil.decode(req.body._id, hashKeyObject.noteHashKey)];
-        _sql = mysql.format(_sql, params);
-        log.info(_sql);
-        connection.query(_sql, function (err, rows, result) {
-          if (err) {
-            resultMap[constants.CODE] = constants.FAIL_CODE;
-            resultMap[constants.MESSAGE] = constants.SYSTEM_ERROR;
-            log.error(err);
-          } else {
-            resultMap[constants.CODE] = constants.SUCCESS_CODE;
-          }
-          res.json(resultMap);
-          connection.release();
-        });
-      });
-    } else {
-      resultMap[constants.CODE] = constants.FAIL_CODE;
-      resultMap[constants.MESSAGE] = constants.LOGIN_TIME_OUT;
-      res.json(resultMap);
-    }
+    Note.updateOne({_id:req.params.noteId},{
+      '$set':{
+        status:0
+      }
+    },function(err,note){
+      if (err) return handleError(res, err);
+      res.status(200).json('note delete');
+    })
   },
   /**
    * 物理删除
    */
   physicsDelete: function (req, res, next) {
-    let resultMap = {};
-    let token = req.headers.token;
-    let user = verifyToken.verify(token);
-    if (user != null) {
-      pool.getConnection(function (err, connection) {
-        let _sql = `delete from note where id =  ?`;
-        let params = [hashidsUtil.decode(req.body._id, hashKeyObject.noteHashKey)];
-        _sql = mysql.format(_sql, params);
-        log.info(_sql);
-        connection.query(_sql, function (err, rows, result) {
-          if (err) {
-            resultMap[constants.CODE] = constants.FAIL_CODE;
-            resultMap[constants.MESSAGE] = constants.SYSTEM_ERROR;
-            log.error(err);
-          } else {
-            resultMap[constants.CODE] = constants.SUCCESS_CODE;
-          }
-          res.json(resultMap);
-          connection.release();
-        });
-      });
-    } else {
-      resultMap[constants.CODE] = constants.FAIL_CODE;
-      resultMap[constants.MESSAGE] = constants.LOGIN_TIME_OUT;
-      res.json(resultMap);
-    }
+    Note.remove({_id:req.params.noteId},function(err,data){
+      if (err) return handleError(res, err);
+      res.status(200).json('note delete');
+    })
   },
   /**
    * 恢复文章
    */
   recovery: function (req, res, next) {
-    let resultMap = {};
-    let token = req.headers.token;
-    let user = verifyToken.verify(token);
-    if (user != null) {
-      pool.getConnection(function (err, connection) {
-        let _sql = `update note set status = 1 where id =  ?`;
-        let params = [hashidsUtil.decode(req.body._id, hashKeyObject.noteHashKey)];
-        _sql = mysql.format(_sql, params);
-        log.info(_sql);
-        connection.query(_sql, function (err, rows, result) {
-          if (err) {
-            resultMap[constants.CODE] = constants.FAIL_CODE;
-            resultMap[constants.MESSAGE] = constants.SYSTEM_ERROR;
-            log.error(err);
-          } else {
-            resultMap[constants.CODE] = constants.SUCCESS_CODE;
-          }
-          res.json(resultMap);
-          connection.release();
-        });
-      });
-    } else {
-      resultMap[constants.CODE] = constants.FAIL_CODE;
-      resultMap[constants.MESSAGE] = constants.LOGIN_TIME_OUT;
-      res.json(resultMap);
-    }
+    Note.updateOne({_id:req.params.noteId},{
+      '$set':{
+        status:1
+      }
+    },function(err,note){
+      if (err) return handleError(res, err);
+      res.status(200).json('note delete');
+    })
   },
   /**
    * 评论

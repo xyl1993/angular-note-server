@@ -4,9 +4,7 @@ const config = {
   // MongoDB connection options
   mongo: {
     options: {
-      db: {
-        safe: true
-      }
+      useNewUrlParser: true
     }
   },
 };

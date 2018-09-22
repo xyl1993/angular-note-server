@@ -12,7 +12,7 @@ var bcrypt = require('bcrypt'); //加密对象
 const saltRounds = 10; //慢哈希轮数
 
 function handleError(res, err) {
-  return res.status(constants.ERROR_CODE).send(err);
+  return res.status(constants.FAIL_CODE).send(err);
 }
 
 /**
@@ -43,7 +43,6 @@ const loginSuccess = function (userId, nikeName, portrait, openId) {
 
 module.exports = {
   insertUsers: function (req, res, next) {
-    let resultMap = {};
     User.findOne({
       email: req.body.email
     }, function (err, user) {
@@ -95,6 +94,7 @@ module.exports = {
               });
           });
         } else {
+          console.log(123);
           //邮箱已被注册
           res.status(constants.FAIL_CODE).json(constants.EMAILUSE);
         }

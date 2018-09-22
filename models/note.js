@@ -26,7 +26,7 @@ const NoteSchema = new Schema({
     type: String,
     required: false
   },
-  modifyTime: {
+  modifyAt: {
     type: Date
   },
   status: {
