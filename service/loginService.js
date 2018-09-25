@@ -34,7 +34,7 @@ const loginSuccess = function (userId, nikeName, portrait, openId) {
   // 输出签发的 Token
   return {
     token: token,
-    user: {
+    data: {
       nike_name: nikeName,
       portrait: portrait
     }
@@ -105,52 +105,49 @@ module.exports = {
    * 第三方登录用户插入
    */
   insertOAuthUser: function (req, res, next) {
-    let resultMap = {};
-    pool.getConnection(function (err, connection) {
-      //查询这个第三方用户是否存在
-      //查询是否绑定了邮箱
-      User.findOne({
-        openUser: {
-          openId: req.openId
+    //查询这个第三方用户是否存在
+    //查询是否绑定了邮箱
+    User.findOne({
+      openUser: {
+        openId: req.openId
+      }
+    }, function (err, user) {
+      if (err) return handleError(res, err);
+      if (user) {
+        let openUserModel = {
+          portrait: user.openUser[0].portrait,
+          nikeName: user.openUser[0].nikeName,
+          openId: user.openUser[0].openId
         }
-      }, function (err, user) {
-        if (err) return handleError(res, err);
-        if (user) {
-          let openUserModel = {
-            portrait: user.openUser[0].portrait,
-            nikeName: user.openUser[0].nikeName,
-            openId: user.openUser[0].openId
+        User.findOneAndUpdate({
+          'openUser.openId': req.openId
+        }, {
+          '$set': {
+            'openUser': openUserModel,
           }
-          User.findOneAndUpdate({
-            'openUser.openId': req.openId
-          }, {
-            '$set': {
-              'openUser': openUserModel,
-            }
-          }, {
-            safe: true,
-            upsert: true,
-            new: true
-          }, function (err, result) {
-            if (err) return handleError(res, err);
-            //授权表存在用户
-            let userId = result.openUser.userId;
-            if (userId) {
-              //说明绑定了邮箱
-              // 签发 Token
-              res.json(constants.SUCCESS_CODE).json(loginSuccess(userId, req.nikeName, req.portrait, req.openId));
-            } else {
-              // let path = `${config.appServerIp}/page/bindEmail?openId=${req.openId}`;
-              // //跳转到绑定邮箱的页面
-              // res.redirect(path);
-              let _returnMap = loginSuccess(userId, req.nikeName, req.portrait, req.openId);
-              _returnMap['openId'] = req.openId;
-              res.json(constants.SUCCESS_CODE).json(_returnMap);
-            }
-          })
-        }
-      })
-    });
+        }, {
+          safe: true,
+          upsert: true,
+          new: true
+        }, function (err, result) {
+          if (err) return handleError(res, err);
+          //授权表存在用户
+          let userId = result.openUser.userId;
+          if (userId) {
+            //说明绑定了邮箱
+            // 签发 Token
+            res.json(constants.SUCCESS_CODE).json(loginSuccess(userId, req.nikeName, req.portrait, req.openId));
+          } else {
+            // let path = `${config.appServerIp}/page/bindEmail?openId=${req.openId}`;
+            // //跳转到绑定邮箱的页面
+            // res.redirect(path);
+            let _returnMap = loginSuccess(userId, req.nikeName, req.portrait, req.openId);
+            _returnMap['openId'] = req.openId;
+            res.json(constants.SUCCESS_CODE).json(_returnMap);
+          }
+        })
+      }
+    })
   },
   dtlogin: function (req, res, next) {
 
@@ -161,13 +158,14 @@ module.exports = {
       if (user) {
         bcrypt.compare(req.body.password, user.password, function (error, status) {
           if (status === true) {
-            res.status(constants.SUCCESS_CODE).json(loginSuccess(user._id, user.nikeName, config.QNdomain + user.portrait));
-            User.updateOne(user._id, {
+            console.log(user);
+            User.updateOne({_id:user._id}, {
               '$set': {
                 loginAt: new Date()
               }
             }, function (err, result) {
               if (err) return handleError(res, err);
+              res.status(constants.SUCCESS_CODE).json(loginSuccess(user._id, user.nikeName, config.QNdomain + user.portrait));
             })
           } else {
             res.status(constants.FAIL_CODE).json(constants.PASSWORDERR);

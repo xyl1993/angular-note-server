@@ -5,40 +5,40 @@ var router = express.Router();
 const qn = require('qn');
 const multerUpload = require('../utils/multerUpload');
 const QNdomain = require('../config/config').QNdomain;
-const {verify} = require('../utils/verifyToken');
+const { verifyToken } = require('../utils/verifyToken');
 var qiniuConfig = require('../config/config').qiniuConfig;
 
 var log = require('log4js').getLogger("noteController");
 
-router.post('/addNote',verify, function (req, res, next) {
+router.post('/addNote',verifyToken, function (req, res, next) {
   return service.addNote(req, res, next);
 });
 
-router.get('/selNoteList',verify, function (req, res, next) {
+router.get('/selNoteList',verifyToken, function (req, res, next) {
   return service.selNoteList(req, res, next);
 });
-router.get('/selNoteDetail/:nodeId',verify, function (req, res, next) {
+router.get('/selNoteDetail/:noteId',verifyToken, function (req, res, next) {
   return service.selNoteDetail(req, res, next);
 });
-router.put('/editNote/:nodeId', verify,function (req, res, next) {
+router.put('/editNote/:noteId', verifyToken,function (req, res, next) {
   return service.editNote(req, res, next);
 });
 /**
  * 逻辑删除
  */
-router.put('/logicDelete/:noteId',verify, function (req, res, next) {
+router.put('/logicDelete/:noteId',verifyToken, function (req, res, next) {
   return service.logicDelete(req, res, next);
 });
 /**
  * 物理删除
  */
-router.delete('/physicsDelete/:noteId',verify,function (req, res, next) {
+router.delete('/physicsDelete/:noteId',verifyToken,function (req, res, next) {
   return service.physicsDelete(req, res, next);
 });
 /**
  * 恢复文章
  */
-router.put('/recovery/:noteId', verify,function (req, res, next) {
+router.put('/recovery/:noteId', verifyToken,function (req, res, next) {
   return service.recovery(req, res, next);
 });
 /**

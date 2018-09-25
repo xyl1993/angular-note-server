@@ -18,13 +18,15 @@ const middleRouter = require('./routes/middle');
 
 var app = express();
 
-//Set up mongoose connection
-mongoose.connect(config.mongo.uri, config.mongo.options);
-mongoose.connection.on('error', function(err) {
-        console.error('MongoDB connection error: ' + err);
-        process.exit(-1);
-    }
-);
+if (process.env.NODE_ENV !== 'test') {
+  mongoose.set('useCreateIndex', true);
+  mongoose.connect(config.mongo.uri, config.mongo.options);
+  mongoose.connection.on('error', (err) => {
+    console.error(`MongoDB connection error: ${err}`);
+    process.exit(-1);
+  });
+}
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
