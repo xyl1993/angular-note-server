@@ -108,9 +108,7 @@ module.exports = {
     //查询这个第三方用户是否存在
     //查询是否绑定了邮箱
     User.findOne({
-      openUser: {
-        openId: req.openId
-      }
+      'openUser.openId': req.openId
     }, function (err, user) {
       if (err) return handleError(res, err);
       if (user) {
@@ -132,7 +130,7 @@ module.exports = {
         }, function (err, result) {
           if (err) return handleError(res, err);
           //授权表存在用户
-          let userId = result.openUser.userId;
+          const { userId } = result.openUser;
           if (userId) {
             //说明绑定了邮箱
             // 签发 Token

@@ -22,8 +22,7 @@ router.post('/bindEmail',function(req,res,next){
  * 第三方登录成功后回调页面请求
  */
 router.get("/github_callback", function (req, res, next) {
-  let code = req.query.code;
-  let state = req.query.state;
+  let {code,state} = req.query;
   let path = "/login/oauth/access_token";
   let headers = {};
   headers.host = 'github.com';
@@ -35,6 +34,7 @@ router.get("/github_callback", function (req, res, next) {
     var reqUrl = `https://github.com${path}`;
     axios.post(reqUrl, {}, {}).then((response) => {
       let { data } = response
+      console.log(data);
       var args = data.split('&');
       var tokenInfo = args[0].split("=");
       var token = tokenInfo[1];
@@ -51,6 +51,7 @@ router.get("/github_callback", function (req, res, next) {
           portrait: data.avatar_url,
           nikeName: data.name
         };
+        console.log(params);
         service.insertOAuthUser(params, res, next);
       })
     });
