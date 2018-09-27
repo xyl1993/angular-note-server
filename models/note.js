@@ -27,7 +27,8 @@ const NoteSchema = new Schema({
     required: false
   },
   status: {
-    type: Number
+    type: Number,
+    default:1
   },
   openId: {
     type: String

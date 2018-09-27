@@ -1,55 +1,37 @@
-var mysql = require('mysql');
-var $conf = require('../config/db');
-var log = require('log4js').getLogger("articleService");
 // 使用连接池，提升性能
-var pool = mysql.createPool($conf.mysql);
-const hashidsUtil = require('../utils/hashidsUtili');
-const hashKeyObject = require('../config/hashKey');
-const config = require('../config/config');
-module.exports = {
-  selectDetail: function (req, res, next) {
-    var resultMap = {
-      // renderName:'',
-      // renderObj:{}
-    };
-    pool.getConnection(function (err, connection) {
-      let params = [
-        req.query._id ? hashidsUtil.decode(req.query._id, hashKeyObject.noteHashKey) : ''
-      ]
-      let _sql = 'select a.*,IFNULL(c.nike_name,b.nike_name) nike_name,c.portrait as third_portrait,b.portrait as user_portrait from note a left join users b on a.create_id = b.id left join open_users c on c.open_id = a.open_id where a.id = ?';
-      _sql = mysql.format(_sql, params);
-      log.info(_sql);
-      connection.query(_sql, function (err, rows, result) {
-        if (err) {
-          resultMap.renderName = 'err';
-          resultMap.renderObj = {
-            message: '文章不存在'
-          };
-          log.error(err);
-        } else {
-          console.log(rows.length);
-          if (rows.length > 0) {
-            let detail = rows[0];
-            resultMap.renderName = 'template';
-            resultMap.renderObj = {
-              title: detail.title,
-              content: detail.content,
-              userInfo: {
-                nike_name: detail.nike_name,
-                portrait: detail.third_portrait ? detail.third_portrait : config.QNdomain + detail.user_portrait
-              }
-            }
-          } else {
-            resultMap.renderName = 'err';
-            resultMap.renderObj = {
-              message: '文章不存在'
-            }
-          }
-        }
-        res.render(resultMap.renderName, resultMap.renderObj);
-        connection.release();
-      });
-    });
+const { model: Note } = require('../models/note');
+const { model: User } = require('../models/user');
+const { to } = require('await-to-js');
 
+module.exports = {
+  selectDetail: async function (req, res, next) {
+    var resultMap = {};
+    const [uerr, note] = await to(Note.findById(req.params.noteId));
+    if (uerr || !note) return res.status(401).send('no note');
+    const [err, user] = await to(User.findById(note.createId));
+    if (err || !user) return res.status(401).send('no note');
+    if(user){
+      resultMap.renderName = 'template';
+      resultMap.renderObj = {
+        title: note.title,
+        content: note.content,
+      }
+      if(note.openId){
+        const openUser = user.openUser.filter((item)=>{
+          return item.openId === note.openId
+        })[0];
+        const userInfo = {
+          nikeName:openUser.nikeName,
+          portrait:openUser.portrait
+        }
+        resultMap.renderObj.userInfo = userInfo;
+      }else{
+        resultMap.renderObj.userInfo = {
+          nikeName:user.nikeName,
+          portrait:user.portrait
+        }
+      }
+      res.render(resultMap.renderName, resultMap.renderObj);
+    }
   }
 };

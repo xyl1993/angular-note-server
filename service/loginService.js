@@ -28,14 +28,12 @@ const loginSuccess = function (userId, nikeName, portrait, openId) {
     openId: openId
   }
   // 签发 Token
-  const token = jwt.sign(payload, secret, {
-    expiresIn: '1day'
-  })
+  const token = jwt.sign(payload, secret)
   // 输出签发的 Token
   return {
     token: token,
     data: {
-      nike_name: nikeName,
+      nikeName: nikeName,
       portrait: portrait
     }
   };
@@ -69,7 +67,7 @@ module.exports = {
         })
       } else {
         //说明存在邮箱
-        if (user.password) {
+        if (!user.password) {
           let _date = new Date();
           let userId = user._id;
           //说明是第三方登录注册的邮箱
@@ -79,10 +77,8 @@ module.exports = {
               email: req.body.email,
               password: encryptPassword,
               loginAt: _date,
-              createAt: _date,
               portrait: config.defaultImg
             };
-            const newUser = new User(userDup);
             User.updateOne({
                 userId
               }, {
@@ -90,11 +86,10 @@ module.exports = {
               },
               function (err, result) {
                 if (err) return res.send(err);
-                res.status(constants.SUCCESS_CODE).json(loginSuccess(req.body.email, config.QNdomain + config.defaultImg));
+                res.status(constants.SUCCESS_CODE).json(loginSuccess(userId,req.body.email, config.QNdomain + config.defaultImg));
               });
           });
         } else {
-          console.log(123);
           //邮箱已被注册
           res.status(constants.FAIL_CODE).json(constants.EMAILUSE);
         }
@@ -107,21 +102,23 @@ module.exports = {
   insertOAuthUser: function (req, res, next) {
     //查询这个第三方用户是否存在
     //查询是否绑定了邮箱
+    const {openId} = req;
     User.findOne({
-      'openUser.openId': req.openId
+      'openUser.openId': openId
     }, function (err, user) {
       if (err) return handleError(res, err);
       if (user) {
+        //存在第三方用户 更新第三方信息
         let openUserModel = {
           portrait: user.openUser[0].portrait,
           nikeName: user.openUser[0].nikeName,
           openId: user.openUser[0].openId
         }
-        User.findOneAndUpdate({
-          'openUser.openId': req.openId
+        User.updateOne({
+          'openUser.openId': openId
         }, {
           '$set': {
-            'openUser': openUserModel,
+            'openUser.$': openUserModel,
           }
         }, {
           safe: true,
@@ -130,20 +127,33 @@ module.exports = {
         }, function (err, result) {
           if (err) return handleError(res, err);
           //授权表存在用户
-          const { userId } = result.openUser;
-          if (userId) {
+          const { password,_id } = user;
+          if (password) {
             //说明绑定了邮箱
             // 签发 Token
-            res.json(constants.SUCCESS_CODE).json(loginSuccess(userId, req.nikeName, req.portrait, req.openId));
+            res.json(constants.SUCCESS_CODE).json(loginSuccess(_id, req.nikeName, req.portrait, openId));
           } else {
-            // let path = `${config.appServerIp}/page/bindEmail?openId=${req.openId}`;
-            // //跳转到绑定邮箱的页面
-            // res.redirect(path);
-            let _returnMap = loginSuccess(userId, req.nikeName, req.portrait, req.openId);
-            _returnMap['openId'] = req.openId;
-            res.json(constants.SUCCESS_CODE).json(_returnMap);
+            res.json(constants.SUCCESS_CODE).json({openId: openId});
           }
         })
+      }else{
+        let userDup = {
+          email:`${req.openId}@temp.com`,
+          openUser:[
+            {
+              genre:'github',
+              openId:req.openId,
+              portrait:req.portrait,
+              nikeName:req.nikeName
+            }
+          ]
+        };
+        const newUser = new User(userDup);
+        newUser.save(function (err, user) {
+          if (err) return handleError(res, err);
+          console.log('openId============'+openId);
+          res.status(constants.SUCCESS_CODE).json({openId});
+        });
       }
     })
   },
@@ -175,53 +185,53 @@ module.exports = {
     })
   },
   bindEmail: function (req, res, next) {
-    pool.getConnection(function (err, connection) {
-      //先查询邮箱是否注册
-      User.findOne({
-        'openUser.openId': req.body.openId
-      }, function (err, user) {
-        if (err) return handleError(res, err);
-        if (user) {
-          //邮箱存在
-          //更新第三方登录表的userid
-          let openUser = user.openUser;
-          if (openUser.userId) {
-            User.findOneAndUpdate({
-              'openUser.openId': req.body.openId
-            }, {
-              $set: {
-                'openUser.openUser': openUser.userId
-              }
-            }, function (err, user) {
-              if (err) return handleError(res, err);
-              resultMap = loginSuccess(openUser.userId, user.nikeName, user.portrait, req.body.openId);
-              res.json(resultMap);
-            })
-          } else {
-            //邮箱不存在 
-            //在主表中插入一天模拟注册数据，密码为空表示不是正常注册而是第三方绑定数据
-            let userDup = {
-              email: req.body.email
-            }
-            const newUser = new User(userDup);
-            newUser.save(function (err, user) {
-              if (err) return handleError(res, err);
-              User.findOneAndUpdate({
-                'openUser.openId': req.body.openId
-              }, {
-                $set: {
-                  'openUser.userId': user._id
-                }
-              }, function (err, user) {
+    //先查询邮箱是否注册
+    const { email,openId } = req.body;
+    console.log(openId);
+    User.findOne({'openUser.openId':openId},function(err,userInfo){
+      if (err) return handleError(res, err);
+      if(userInfo){
+        const openUser =  userInfo.openUser[0]
+        User.findOne({email:email},function(err,user){
+          if(user){
+            //邮箱存在
+            User.updateOne({ email: email},
+              {
+                $addToSet: {
+                  openUser,
+                },
+              },
+              {safe: true, upsert: true,new: true},
+              function(err, result) {
                 if (err) return handleError(res, err);
-                res.json(loginSuccess(user._id, openUser.nikeName, openUser.portrait, req.body.openId));
-              })
-            });
+                //删除之前的信息
+                User.deleteOne(
+                  {
+                    email: `${openId}@temp.com`,
+                  },
+                  function(err) {
+                    if (err) return handleError(res, err);
+                    resultMap = loginSuccess(userInfo._id, openUser.nikeName, openUser.portrait,openId);
+                    res.status(constants.SUCCESS_CODE).json(resultMap);
+                  },
+                );
+              },
+            );
+          }else{
+            //邮箱不存在 
+            //更新临时邮箱为正式邮箱
+            User.updateOne({email:userInfo.email},{
+              email:email
+            },{ new: true }).exec(function(err,user){
+              if (err) return handleError(res, err);
+              resultMap = loginSuccess(userInfo._id, openUser.nikeName, openUser.portrait,openId);
+              res.status(constants.SUCCESS_CODE).json(resultMap);
+            })
           }
-        } else {
-          res.status(constants.FAIL_CODE).json(constants.NOUSER);
-        }
-      })
-    });
+        })
+      }else{
+        res.status(constants.FAIL_CODE).json(constants.NOUSER);
+      }
+    })
   }
 };

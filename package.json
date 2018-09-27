@@ -3,20 +3,19 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "pm2 start ./bin/www --name angular-app-server",
-    "reload": "pm2 reload angular-app-server",
-    "watch": "pm2 start ./bin/www --name angular-app-server --watch",
+    "start": "ross-env NODE_ENV=development pm2 start ./index.js --name angular-app-server",
     "stop": "pm2 stop all",
-    "debug": "nodemon -x cross-env NODE_ENV=development node ./index.js",
-    "build": "webpack --mode production --config ./webpack.build.js"
+    "debug": "nodemon -x cross-env NODE_ENV=development node ./index.js"
   },
   "dependencies": {
+    "await-to-js": "^2.0.1",
     "bytes": "^3.0.0",
     "cookie-parser": "~1.4.3",
     "debug": "~2.6.9",
     "ejs": "^2.6.1",
     "express": "~4.16.0",
     "http-errors": "~1.6.2",
+    "http-status": "^1.2.0",
     "jade": "~1.11.0",
     "jsonwebtoken": "^8.3.0",
     "mongoose": "^5.2.16",

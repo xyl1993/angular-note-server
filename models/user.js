@@ -28,7 +28,7 @@ const UserSchema = new Schema({
     type: Date
   },
   createAt: Date,
-  openUser: { type: OpenUserSchema },
+  openUser: [ OpenUserSchema ],
 });
 
 module.exports = {
