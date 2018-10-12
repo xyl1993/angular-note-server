@@ -86,12 +86,12 @@ module.exports = {
               },
               function (err, result) {
                 if (err) return res.send(err);
-                res.status(constants.SUCCESS_CODE).json(loginSuccess(userId,req.body.email, config.QNdomain + config.defaultImg));
+                res.status(200).json(loginSuccess(userId,req.body.email, config.QNdomain + config.defaultImg));
               });
           });
         } else {
           //邮箱已被注册
-          res.status(constants.FAIL_CODE).json(constants.EMAILUSE);
+          res.status(200).json(constants.EMAILUSE);
         }
       }
     });
@@ -131,9 +131,9 @@ module.exports = {
           if (password) {
             //说明绑定了邮箱
             // 签发 Token
-            res.json(constants.SUCCESS_CODE).json(loginSuccess(_id, req.nikeName, req.portrait, openId));
+            res.status(constants.SUCCESS_CODE).json(loginSuccess(_id, req.nikeName, req.portrait, openId));
           } else {
-            res.json(constants.SUCCESS_CODE).json({openId: openId});
+            res.status(constants.SUCCESS_CODE).json({openId: openId});
           }
         })
       }else{
@@ -176,11 +176,11 @@ module.exports = {
               res.status(constants.SUCCESS_CODE).json(loginSuccess(user._id, user.nikeName, config.QNdomain + user.portrait));
             })
           } else {
-            res.status(constants.FAIL_CODE).json(constants.PASSWORDERR);
+            res.status(200).json(constants.PASSWORDERR);
           }
         })
       } else {
-        res.status(constants.FAIL_CODE).json(constants.NOUSER);
+        res.status(200).json(constants.NOUSER);
       }
     })
   },
@@ -230,7 +230,7 @@ module.exports = {
           }
         })
       }else{
-        res.status(constants.FAIL_CODE).json(constants.NOUSER);
+        res.status(200).json(constants.NOUSER);
       }
     })
   }

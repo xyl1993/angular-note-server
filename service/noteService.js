@@ -1,9 +1,9 @@
 const constants = require('../config/constants');
 const { model: Note } = require('../models/note');
 const { model: User } = require('../models/user');
-const status = require('http-status');
+const httpStatus = require('http-status');
 function handleError(res, err) {
-  return res.status(status.INTERNAL_SERVER_ERROR).send(err);
+  return res.status(httpStatus.INTERNAL_SERVER_ERROR).send(err);
 }
 
 module.exports = {
@@ -17,7 +17,7 @@ module.exports = {
 
     newNote.save(function (err, note) {
       if (err) return handleError(res, err);
-      res.status(status.OK).json(note);
+      res.status(httpStatus.OK).json(note);
     })
 
   },
@@ -33,7 +33,7 @@ module.exports = {
       requestBody
     ).exec(function(err,note){
       if (err) return handleError(res, err);
-      res.status(status.OK).json('note edit');
+      res.status(httpStatus.OK).json('note edit');
     })
   },
   selNoteList: function (req, res, next) {
@@ -60,7 +60,7 @@ module.exports = {
     console.log(sort);
     Note.find(params).sort(sort).exec(function(err,noteList){
       if (err) return handleError(res, err);
-      res.status(status.OK).json(noteList)
+      res.status(httpStatus.OK).json(noteList)
     })
 
   },
@@ -87,7 +87,7 @@ module.exports = {
         responseBody.createdAt = note.createdAt;
         responseBody.updatedAt = note.updatedAt;
         if (err) return handleError(res, err);
-        res.status(status.OK).json(responseBody);
+        res.status(httpStatus.OK).json(responseBody);
       })
     })
   },
@@ -101,7 +101,7 @@ module.exports = {
       }
     },function(err,note){
       if (err) return handleError(res, err);
-      res.status(status.OK).json('note delete');
+      res.status(httpStatus.OK).json('note delete');
     })
   },
   /**
@@ -110,7 +110,7 @@ module.exports = {
   physicsDelete: function (req, res, next) {
     Note.remove({_id:req.params.noteId},function(err,data){
       if (err) return handleError(res, err);
-      res.status(status.OK).json('note delete');
+      res.status(httpStatus.OK).json('note delete');
     })
   },
   /**
@@ -123,7 +123,7 @@ module.exports = {
       }
     },function(err,note){
       if (err) return handleError(res, err);
-      res.status(status.OK).json('note delete');
+      res.status(httpStatus.OK).json('note delete');
     })
   },
 };
