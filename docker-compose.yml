@@ -1,0 +1,6 @@
+version: '3'
+services:
+  docker-ng:  # 指定服务名称
+    build: .  # 指定 Dockerfile 所在路径
+    ports:    # 指定端口映射
+      - "3001:3001"
