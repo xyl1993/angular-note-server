@@ -1,5 +1,5 @@
 FROM node:8.12.0
 COPY . /app
 WORKDIR /app
-RUN yarn install
+RUN cnpm install
 EXPOSE 3001
