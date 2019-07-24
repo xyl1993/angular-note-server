@@ -5,5 +5,4 @@ dist/
 vue/
 log/
 *.log
-/config/db.js
 package-lock.json

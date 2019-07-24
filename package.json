@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "pm2 start ./bin/www --name angular-app-server",
+    "start": "pm2-runtime start ./bin/www --name angular-app-server",
     "reload": "pm2 reload angular-app-server",
     "watch": "pm2 start ./bin/www --name angular-app-server --watch",
     "stop": "pm2 stop all",
